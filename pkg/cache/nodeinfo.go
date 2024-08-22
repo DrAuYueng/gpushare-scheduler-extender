@@ -38,7 +38,14 @@ func NewNodeInfo(node *v1.Node) *NodeInfo {
 
 	devMap := map[int]*DeviceInfo{}
 	for i := 0; i < utils.GetGPUCountInNode(node); i++ {
-		devMap[i] = newDeviceInfo(i, uint(utils.GetTotalGPUMemory(node)/utils.GetGPUCountInNode(node)))
+		//devMap[i] = newDeviceInfo(i, uint(utils.GetTotalGPUMemory(node)/utils.GetGPUCountInNode(node)))
+		avgMem := utils.GetTotalGPUMemory(node) / utils.GetGPUCountInNode(node)
+		mem := utils.GetGPUMemory(node, i)
+		if mem <= 0 {
+			log.V(3).Info("warn: node %s with nodeinfo %v has no mem defined, user avg mem", node.Name, node)
+			mem = avgMem
+		}
+		devMap[i] = newDeviceInfo(i, uint(mem))
 	}
 
 	if len(devMap) == 0 {

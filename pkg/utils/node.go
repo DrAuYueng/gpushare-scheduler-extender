@@ -1,6 +1,9 @@
 package utils
 
-import "k8s.io/api/core/v1"
+import (
+	"fmt"
+	"k8s.io/api/core/v1"
+)
 
 // Is the Node for GPU sharing
 func IsGPUSharingNode(node *v1.Node) bool {
@@ -10,6 +13,18 @@ func IsGPUSharingNode(node *v1.Node) bool {
 // Get the total GPU memory of the Node
 func GetTotalGPUMemory(node *v1.Node) int {
 	val, ok := node.Status.Capacity[ResourceName]
+
+	if !ok {
+		return 0
+	}
+
+	return int(val.Value())
+}
+
+func GetGPUMemory(node *v1.Node, index int) int {
+	key := fmt.Sprintf("%s_%d", "aliyun.com/gpu", index)
+	rk := v1.ResourceName(key)
+	val, ok := node.Status.Capacity[rk]
 
 	if !ok {
 		return 0
